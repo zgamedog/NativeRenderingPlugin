@@ -52,6 +52,38 @@ public class UseRenderingPlugin : MonoBehaviour
     private static extern void RegisterPlugin();
 #endif
 
+    
+#if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
+    [DllImport("__Internal")]
+#else
+    [DllImport("RenderingPlugin")]
+#endif
+    private static extern IntPtr GetRenderEventAndDataFunc();
+
+    public void MetalFx(CommandBuffer cb, IntPtr inTex, IntPtr outTex)
+    {   
+        MetalfxParam data = new MetalfxParam();
+        data.value = 1;
+        //Debug.Log(inTex +" " + outTex );
+        cb.IssuePluginEventAndData( GetRenderEventAndDataFunc(),1,StructToPtr<MetalfxParam>(data) );
+    }   
+
+    struct  MetalfxParam
+    {
+        public int value;
+        public IntPtr inTex;
+        public IntPtr outTex;
+        public int frame;
+    }
+
+    static  IntPtr StructToPtr<T>(T _data)
+    {
+        var size = Marshal.SizeOf(_data);
+        IntPtr _intPtr  = Marshal.AllocHGlobal(size);
+        Marshal.StructureToPtr( _data,_intPtr,true );
+        return _intPtr;
+    }
+
     // DX12 plugin has a few additional exported functions
 
 #if (UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_WSA || UNITY_WSA_10_0)
@@ -76,7 +108,7 @@ public class UseRenderingPlugin : MonoBehaviour
     [DllImport("RenderingPlugin")]
     private static extern uint GetBackBufferHeight();
 
-    private static RenderTexture renderTex;
+
     private static GameObject pluginInfo;
 
     private void CreateRenderTexture()
@@ -108,6 +140,10 @@ public class UseRenderingPlugin : MonoBehaviour
 
         CreateTextureAndPassToPlugin();
         SendMeshBuffersToPlugin();
+
+        // 
+        CreateRT();
+
         yield return StartCoroutine("CallPluginAtEndOfFrames");
     }
 
@@ -208,6 +244,40 @@ public class UseRenderingPlugin : MonoBehaviour
             {
                 GL.IssuePluginEvent(GetRenderEventFunc(), 2);
             }
-        }
+
+            if(m_cb == null)
+            {   
+                m_cb = new CommandBuffer();
+            }   
+                IntPtr nativeBufPTr = renderTex.colorBuffer.GetNativeRenderBufferPtr();
+                IntPtr outBufPTr = outTex.colorBuffer.GetNativeRenderBufferPtr();
+            MetalFx(  m_cb,nativeBufPTr,outBufPTr);
+            Graphics.ExecuteCommandBuffer(m_cb);
+            m_cb.Clear();
+        }   
+    }   
+    CommandBuffer m_cb;
+    public  RenderTexture renderTex;
+    public  RenderTexture outTex;
+    public int value;
+
+    public Texture srcT;
+
+    private void CreateRT()
+    {       
+        renderTex = new RenderTexture(512, 512, 16, RenderTextureFormat.ARGB32);
+        renderTex.Create();
+        Graphics.CopyTexture(srcT,renderTex);
+        IntPtr nativeBufPTr = renderTex.colorBuffer.GetNativeRenderBufferPtr();
+        SetRenderTexture(nativeBufPTr);
+        GameObject sphere = GameObject.Find("Quad");
+        //sphere.transform.rotation = Quaternion.Euler(0.0f, 180.0f, 0.0f);
+        sphere.GetComponent<Renderer>().material.mainTexture = renderTex;
+
+        outTex = new RenderTexture(1024, 1024, 16, RenderTextureFormat.ARGB32);
+        outTex.Create();
+
+        sphere = GameObject.Find("Quad1");
+        sphere.GetComponent<Renderer>().material.mainTexture = outTex;
     }
 }

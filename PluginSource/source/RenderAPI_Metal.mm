@@ -2,7 +2,7 @@
 #include "RenderAPI.h"
 #include "PlatformBase.h"
 
-
+ 
 // Metal implementation of RenderAPI.
 
 
@@ -11,6 +11,7 @@
 #include "Unity/IUnityGraphicsMetal.h"
 #import <Metal/Metal.h>
 
+#include "LibMetalEx/metallib.h"
 
 class RenderAPI_Metal : public RenderAPI
 {
@@ -29,6 +30,7 @@ public:
 
 	virtual void* BeginModifyVertexBuffer(void* bufferHandle, size_t* outBufferSize);
 	virtual void EndModifyVertexBuffer(void* bufferHandle);
+    virtual void MetalfxFunc(void* data);
 
 private:
 	void CreateResources();
@@ -91,6 +93,9 @@ static const char kShaderSource[] =
 
 void RenderAPI_Metal::CreateResources()
 {
+    //NSInteger a = [ libTest Add:1 ValB: 2];
+    //NSLog(@"_" ,a);
+    
 	id<MTLDevice> metalDevice = m_MetalGraphics->MetalDevice();
 	NSError* error = nil;
 
@@ -253,6 +258,39 @@ void RenderAPI_Metal::EndModifyVertexBuffer(void* bufferHandle)
 	[buf didModifyRange:NSMakeRange(0, buf.length)];
 #	endif // if UNITY_OSX
 }
+
+typedef struct MetalfxParam
+{
+     int value;
+     void* inTex;
+     void* outTex;
+     int frame;
+} MetalfxParam;
+
+id<MTLCommandQueue> _cqueue;
+id<MTLCommandBuffer> _cb;
+void RenderAPI_Metal::MetalfxFunc(void* data)
+{
+    auto _data = (MetalfxParam*)data;
+    
+    id<MTLTexture> intex = (__bridge id<MTLTexture>)_data->inTex;
+    id<MTLTexture> outtex = (__bridge id<MTLTexture>)_data->outTex;
+    
+    id<MTLDevice> metalDevice = m_MetalGraphics->MetalDevice();
+        
+    //NSLog(@"___RenderAPI_Metal::MetalfxFunc__");
+    
+    if(_cqueue == nil)
+        _cqueue = [metalDevice newCommandQueue];
+    
+    _cb = [_cqueue commandBuffer];
+    
+    [metallib ApplyMetalFx:metalDevice
+    InTex:intex OutTex:outtex CommandBuffer:_cb];
+    
+    [_cb commit];
+}
+
 
 
 #endif // #if SUPPORT_METAL

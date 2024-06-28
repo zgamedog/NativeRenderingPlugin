@@ -68,10 +68,10 @@ private:
 
 
 RenderAPI* CreateRenderAPI_OpenGLCoreES(UnityGfxRenderer apiType)
-{
-	return new RenderAPI_OpenGLCoreES(apiType);
+{   
+	//return new RenderAPI_OpenGLCoreES(apiType);
+    return nullptr;
 }
-
 
 enum VertexInputs
 {

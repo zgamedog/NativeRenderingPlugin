@@ -13,6 +13,8 @@
 		2B6899C91CF83DB000C4BA4F /* RenderingPlugin.bundle in Copy Bundle into Unity project */ = {isa = PBXBuildFile; fileRef = 8D576316048677EA00EA77CD /* RenderingPlugin.bundle */; };
 		2B6899CB1CF8409A00C4BA4F /* RenderAPI_Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2B6899CA1CF8409A00C4BA4F /* RenderAPI_Metal.mm */; };
 		2BC2A8D5144C433D00D5EF79 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BC2A8D4144C433D00D5EF79 /* OpenGL.framework */; };
+		8B3301672C2E928600D20D3E /* LibMetalEx in Resources */ = {isa = PBXBuildFile; fileRef = 8B3301662C2E928600D20D3E /* LibMetalEx */; };
+		8B33016E2C2E9BFF00D20D3E /* libmetallib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B3301682C2E92AF00D20D3E /* libmetallib.a */; };
 		8D576314048677EA00EA77CD /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */; };
 /* End PBXBuildFile section */
 
@@ -47,6 +49,9 @@
 		2B6899C71CF839A600C4BA4F /* IUnityInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityInterface.h; path = ../../source/Unity/IUnityInterface.h; sourceTree = "<group>"; };
 		2B6899CA1CF8409A00C4BA4F /* RenderAPI_Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = RenderAPI_Metal.mm; path = ../../source/RenderAPI_Metal.mm; sourceTree = "<group>"; };
 		2BC2A8D4144C433D00D5EF79 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		8B3301642C2E6CC700D20D3E /* liblibTest.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblibTest.a; path = LibTest/liblibTest.a; sourceTree = "<group>"; };
+		8B3301662C2E928600D20D3E /* LibMetalEx */ = {isa = PBXFileReference; lastKnownFileType = folder; path = LibMetalEx; sourceTree = "<group>"; };
+		8B3301682C2E92AF00D20D3E /* libmetallib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmetallib.a; path = LibMetalEx/libmetallib.a; sourceTree = "<group>"; };
 		8D576316048677EA00EA77CD /* RenderingPlugin.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RenderingPlugin.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D576317048677EA00EA77CD /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -56,6 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B33016E2C2E9BFF00D20D3E /* libmetallib.a in Frameworks */,
 				8D576314048677EA00EA77CD /* CoreFoundation.framework in Frameworks */,
 				2BC2A8D5144C433D00D5EF79 /* OpenGL.framework in Frameworks */,
 			);
@@ -67,10 +73,12 @@
 		089C166AFE841209C02AAC07 /* RenderingPlugin */ = {
 			isa = PBXGroup;
 			children = (
+				8B3301662C2E928600D20D3E /* LibMetalEx */,
 				08FB77AFFE84173DC02AAC07 /* Source */,
 				089C167CFE841241C02AAC07 /* Resources */,
 				089C1671FE841209C02AAC07 /* External Frameworks and Libraries */,
 				19C28FB6FE9D52B211CA2CBB /* Products */,
+				8B33013E2C2E5E8D00D20D3E /* Frameworks */,
 			);
 			name = RenderingPlugin;
 			sourceTree = "<group>";
@@ -129,6 +137,15 @@
 			name = Unity;
 			sourceTree = "<group>";
 		};
+		8B33013E2C2E5E8D00D20D3E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8B3301682C2E92AF00D20D3E /* libmetallib.a */,
+				8B3301642C2E6CC700D20D3E /* liblibTest.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -183,6 +200,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B3301672C2E928600D20D3E /* LibMetalEx in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -211,11 +229,17 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				HEADER_SEARCH_PATHS = ../;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/LibTest",
+					"$(PROJECT_DIR)/LibMetalEx",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:rfc1034Identifier}";
 				PRODUCT_NAME = RenderingPlugin;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				VALID_ARCHS = x86_64;
 				WRAPPER_EXTENSION = bundle;
 			};
@@ -228,11 +252,17 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				HEADER_SEARCH_PATHS = ../;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/LibTest",
+					"$(PROJECT_DIR)/LibMetalEx",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:rfc1034Identifier}";
 				PRODUCT_NAME = RenderingPlugin;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				VALID_ARCHS = x86_64;
 				WRAPPER_EXTENSION = bundle;
 			};
@@ -244,6 +274,14 @@
 				ARCHS = "$(ARCHS_STANDARD)";
 				ENABLE_TESTABILITY = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = (
+					"/Users/sunborn-gf2/Documents/NativeRenderingPlugin/PluginSource/source",
+					"$(SRCROOT)",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(SRCROOT)",
+					"/Users/sunborn-gf2/Documents/NativeRenderingPlugin/PluginSource/source",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -255,6 +293,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
+				HEADER_SEARCH_PATHS = (
+					"/Users/sunborn-gf2/Documents/NativeRenderingPlugin/PluginSource/source",
+					"$(SRCROOT)",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(SRCROOT)",
+					"/Users/sunborn-gf2/Documents/NativeRenderingPlugin/PluginSource/source",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				SDKROOT = macosx;
 				SYMROOT = ../../build;

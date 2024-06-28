@@ -319,6 +319,30 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 	{
 		drawToPluginTexture();
 	}
+}
+
+static void Metalfx(void* data )
+{   
+#if UNITY_IOS || UNITY_OSX
+    s_CurrentAPI->MetalfxFunc( data );
+#endif
+}
+
+
+static void UNITY_INTERFACE_API OnRenderEventData(int eventID,void* data)
+{
+    // Unknown / unsupported graphics device type? Do nothing
+    if (s_CurrentAPI == NULL)
+        return;
+    
+    if (eventID == 1)
+    {
+        Metalfx( data );
+    }
+    else if (eventID == 2)
+    {
+            
+    }
 
 }
 
@@ -328,6 +352,11 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc()
 {
 	return OnRenderEvent;
+}
+
+extern "C" UnityRenderingEventAndData UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventAndDataFunc()
+{
+    return OnRenderEventData;
 }
 
 // --------------------------------------------------------------------------
