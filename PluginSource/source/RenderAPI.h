@@ -46,7 +46,7 @@ public:
 	virtual void* BeginModifyVertexBuffer(void* bufferHandle, size_t* outBufferSize) = 0;
 	// End modifying vertex buffer data.
 	virtual void EndModifyVertexBuffer(void* bufferHandle) = 0;
-    virtual void MetalfxFunc(void* data) = 0;
+    virtual void MetalfxFunc(void* data ,void* data1) = 0;
 	// --------------------------------------------------------------------------
 	// DX12 plugin specific functions
 	// --------------------------------------------------------------------------

@@ -30,6 +30,14 @@ public class UseRenderingPlugin : MonoBehaviour
 #endif
     private static extern void SetTextureFromUnity(System.IntPtr texture, int w, int h);
 
+
+#if (PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_BRATWURST || PLATFORM_SWITCH) && !UNITY_EDITOR
+    [DllImport("__Internal")]
+#else
+    [DllImport("RenderingPlugin")]
+#endif
+    private static extern void SetOutTexFromUnity(System.IntPtr texture, int w, int h);
+
     // We'll pass native pointer to the mesh vertex buffer.
     // Also passing source unmodified mesh data.
     // The plugin will fill vertex data from native code.
@@ -60,20 +68,22 @@ public class UseRenderingPlugin : MonoBehaviour
 #endif
     private static extern IntPtr GetRenderEventAndDataFunc();
 
+    MetalfxParam data = new MetalfxParam();
     public void MetalFx(CommandBuffer cb, IntPtr inTex, IntPtr outTex)
-    {   
-        MetalfxParam data = new MetalfxParam();
-        data.value = 1;
-        //Debug.Log(inTex +" " + outTex );
+    {       
+        //data.value = 7;
+        data.inTex = inTex;
+        data.outTex = outTex;
+        Debug.Log(inTex +" " + outTex );
         cb.IssuePluginEventAndData( GetRenderEventAndDataFunc(),1,StructToPtr<MetalfxParam>(data) );
     }   
 
+   [StructLayout(LayoutKind.Sequential) ]
     struct  MetalfxParam
-    {
-        public int value;
+    {   
+        //public int value;
         public IntPtr inTex;
         public IntPtr outTex;
-        public int frame;
     }
 
     static  IntPtr StructToPtr<T>(T _data)
@@ -133,17 +143,17 @@ public class UseRenderingPlugin : MonoBehaviour
         RegisterPlugin();
 #endif
 
-        if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Direct3D12)
-        {
-            CreateRenderTexture();
-        }
+        // if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Direct3D12)
+        // {
+        //     CreateRenderTexture();
+        // }
 
-        CreateTextureAndPassToPlugin();
-        SendMeshBuffersToPlugin();
+        // CreateTextureAndPassToPlugin();
+        // SendMeshBuffersToPlugin();
 
         // 
         CreateRT();
-
+        //yield return new WaitForEndOfFrame();
         yield return StartCoroutine("CallPluginAtEndOfFrames");
     }
 
@@ -226,36 +236,42 @@ public class UseRenderingPlugin : MonoBehaviour
             // Set time for the plugin
             // Unless it is D3D12 whose renderer is allowed to overlap with the next frame update and would cause instabilities due to no synchronization.
             // On Switch, with multithreaded mode, setting the time for frame 1 may overlap with the render thread calling the plugin event for frame 0 resulting in the plugin writing data for frame 1 at frame 0.
-            if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Direct3D12 && SystemInfo.graphicsDeviceType != GraphicsDeviceType.Switch)
+            
+            // if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Direct3D12 && SystemInfo.graphicsDeviceType != GraphicsDeviceType.Switch)
+            // {
+            //     ++updateTimeCounter;
+            //     SetTimeFromUnity((float)updateTimeCounter * 0.016f);
+            // }
+
+            // // Issue a plugin event with arbitrary integer identifier.
+            // // The plugin can distinguish between different
+            // // things it needs to do based on this ID.
+            // // On some backends the choice of eventID matters e.g on DX12 where
+            // // eventID == 1 means the plugin callback will be called from the render thread
+            // // and eventID == 2 means the callback is called from the submission thread
+            // GL.IssuePluginEvent(GetRenderEventFunc(), 1);
+
+            // if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Direct3D12)
+            // {
+            //     GL.IssuePluginEvent(GetRenderEventFunc(), 2);
+            // }
+            if(m_fx_btn)
             {
-                ++updateTimeCounter;
-                SetTimeFromUnity((float)updateTimeCounter * 0.016f);
+                if(m_cb == null)
+                {   
+                    m_cb = new CommandBuffer();
+                }   
+                    IntPtr nativeBufPTr = renderTex.GetNativeTexturePtr();
+                    IntPtr outBufPTr = outTex.GetNativeTexturePtr();
+                MetalFx(  m_cb,nativeBufPTr,outBufPTr);
+                Graphics.ExecuteCommandBuffer(m_cb);
+                //m_cb.Clear();
             }
 
-            // Issue a plugin event with arbitrary integer identifier.
-            // The plugin can distinguish between different
-            // things it needs to do based on this ID.
-            // On some backends the choice of eventID matters e.g on DX12 where
-            // eventID == 1 means the plugin callback will be called from the render thread
-            // and eventID == 2 means the callback is called from the submission thread
-            GL.IssuePluginEvent(GetRenderEventFunc(), 1);
-
-            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Direct3D12)
-            {
-                GL.IssuePluginEvent(GetRenderEventFunc(), 2);
-            }
-
-            if(m_cb == null)
-            {   
-                m_cb = new CommandBuffer();
-            }   
-                IntPtr nativeBufPTr = renderTex.colorBuffer.GetNativeRenderBufferPtr();
-                IntPtr outBufPTr = outTex.colorBuffer.GetNativeRenderBufferPtr();
-            MetalFx(  m_cb,nativeBufPTr,outBufPTr);
-            Graphics.ExecuteCommandBuffer(m_cb);
-            m_cb.Clear();
         }   
     }   
+
+    bool m_fx_btn;
     CommandBuffer m_cb;
     public  RenderTexture renderTex;
     public  RenderTexture outTex;
@@ -263,13 +279,15 @@ public class UseRenderingPlugin : MonoBehaviour
 
     public Texture srcT;
 
+    void go_fx(){ m_fx_btn = true; }
+
     private void CreateRT()
     {       
         renderTex = new RenderTexture(512, 512, 16, RenderTextureFormat.ARGB32);
         renderTex.Create();
         Graphics.CopyTexture(srcT,renderTex);
-        IntPtr nativeBufPTr = renderTex.colorBuffer.GetNativeRenderBufferPtr();
-        SetRenderTexture(nativeBufPTr);
+        //IntPtr nativeBufPTr = renderTex.colorBuffer.GetNativeRenderBufferPtr();
+        //SetRenderTexture(nativeBufPTr);
         GameObject sphere = GameObject.Find("Quad");
         //sphere.transform.rotation = Quaternion.Euler(0.0f, 180.0f, 0.0f);
         sphere.GetComponent<Renderer>().material.mainTexture = renderTex;
@@ -279,5 +297,10 @@ public class UseRenderingPlugin : MonoBehaviour
 
         sphere = GameObject.Find("Quad1");
         sphere.GetComponent<Renderer>().material.mainTexture = outTex;
+
+        SetTextureFromUnity(renderTex.GetNativeTexturePtr(), renderTex.width, renderTex.height);
+        SetOutTexFromUnity(outTex.GetNativeTexturePtr(), outTex.width, outTex.height);
+
+        Invoke("go_fx",3);
     }
 }

@@ -19,7 +19,7 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTimeFromUnity (flo
 
 // --------------------------------------------------------------------------
 // SetTextureFromUnity, an example function we export which is called by one of the scripts.
-
+static void* g_OutTexHandle = NULL;
 static void* g_TextureHandle = NULL;
 static int   g_TextureWidth  = 0;
 static int   g_TextureHeight = 0;
@@ -32,6 +32,14 @@ extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetTextureFromUnity(v
 	g_TextureHandle = textureHandle;
 	g_TextureWidth = w;
 	g_TextureHeight = h;
+}
+
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetOutTexFromUnity(void* textureHandle, int w, int h)
+{
+    // A script calls this at initialization time; just remember the texture pointer here.
+    // Will update texture pixels each frame from the plugin rendering event (texture update
+    // needs to happen on the rendering thread).
+    g_OutTexHandle = textureHandle;
 }
 
 

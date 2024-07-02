@@ -11,7 +11,7 @@
 #include "Unity/IUnityGraphicsMetal.h"
 #import <Metal/Metal.h>
 
-#include "LibMetalEx/metallib.h"
+#include "metallib.h"
 
 class RenderAPI_Metal : public RenderAPI
 {
@@ -30,7 +30,7 @@ public:
 
 	virtual void* BeginModifyVertexBuffer(void* bufferHandle, size_t* outBufferSize);
 	virtual void EndModifyVertexBuffer(void* bufferHandle);
-    virtual void MetalfxFunc(void* data);
+    virtual void MetalfxFunc(void* data,void* data1);
 
 private:
 	void CreateResources();
@@ -261,18 +261,21 @@ void RenderAPI_Metal::EndModifyVertexBuffer(void* bufferHandle)
 
 typedef struct MetalfxParam
 {
-     int value;
+     //int value;
      void* inTex;
      void* outTex;
-     int frame;
 } MetalfxParam;
 
 id<MTLCommandQueue> _cqueue;
 id<MTLCommandBuffer> _cb;
-void RenderAPI_Metal::MetalfxFunc(void* data)
+void RenderAPI_Metal::MetalfxFunc(void* data,void* data1)
 {
-    auto _data = (MetalfxParam*)data;
     
+    auto _data = static_cast<MetalfxParam*>(data);
+    
+//    NSLog(@"%p", _data->inTex );
+//    NSLog(@"%d", _data->outTex );
+        
     id<MTLTexture> intex = (__bridge id<MTLTexture>)_data->inTex;
     id<MTLTexture> outtex = (__bridge id<MTLTexture>)_data->outTex;
     
@@ -284,7 +287,7 @@ void RenderAPI_Metal::MetalfxFunc(void* data)
         _cqueue = [metalDevice newCommandQueue];
     
     _cb = [_cqueue commandBuffer];
-    
+    // todo mem leak ========
     [metallib ApplyMetalFx:metalDevice
     InTex:intex OutTex:outtex CommandBuffer:_cb];
     
