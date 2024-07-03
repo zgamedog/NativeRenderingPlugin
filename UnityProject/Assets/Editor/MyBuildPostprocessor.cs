@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using System.IO;
+using UnityEditor.iOS.Xcode.Extensions;
 
 public class MyBuildPostprocessor
 {
@@ -28,6 +29,18 @@ public class MyBuildPostprocessor
 	#else
 		string target = proj.TargetGuidByName("Unity-iPhone");
 	#endif
+
+
+     string[] frameworks = new string[1]{ "MetalFX"};
+
+     foreach (string framework in frameworks) {
+         string frameworkName = framework + ".framework";
+        //  var src = Path.Combine("Pods", framework, "XCFrameworks", frameworkName);
+        //  var frameworkPath = proj.AddFile(src, src);
+        // proj.AddFileToBuild(target, frameworkPath);
+		Debug.Log( frameworkName );
+         proj.AddFrameworkToProject(target, frameworkName,false);
+     }	
 
 		string[] filesToCopy = new string[] {
 			"PlatformBase.h", "RenderingPlugin.cpp",
