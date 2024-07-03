@@ -332,7 +332,7 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID)
 static void Metalfx(void* data )
 {   
 #if UNITY_IOS || UNITY_OSX
-    s_CurrentAPI->MetalfxFunc( data );
+    s_CurrentAPI->MetalfxFunc( data ,data);
 #endif
 }
 

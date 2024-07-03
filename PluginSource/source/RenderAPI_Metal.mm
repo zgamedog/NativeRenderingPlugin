@@ -267,7 +267,8 @@ typedef struct MetalfxParam
 } MetalfxParam;
 
 id<MTLCommandQueue> _cqueue;
-id<MTLCommandBuffer> _cb;
+bool cb_done = true;
+
 void RenderAPI_Metal::MetalfxFunc(void* data,void* data1)
 {
     
@@ -286,10 +287,22 @@ void RenderAPI_Metal::MetalfxFunc(void* data,void* data1)
     if(_cqueue == nil)
         _cqueue = [metalDevice newCommandQueue];
     
-    _cb = [_cqueue commandBuffer];
-    // todo mem leak ========
-    [metallib ApplyMetalFx:metalDevice
-    InTex:intex OutTex:outtex CommandBuffer:_cb];
+    if(cb_done ==false)
+        return;
+    
+    id<MTLCommandBuffer> _cb = [_cqueue commandBuffer];
+    
+    [_cb addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
+//        CFTimeInterval start = commandBuffer.GPUStartTime;
+//        CFTimeInterval end = commandBuffer.GPUEndTime;
+//        CFTimeInterval gpuRuntimeDuration = end - start;
+        cb_done = true;
+        //NSLog(@"::MetalfxFunc__gpuRuntimeDuration %d", gpuRuntimeDuration);
+    }];
+    cb_done =false;
+    
+    //[metallib Blit: metalDevice InTex:intex OutTex:outtex CommandBuffer:_cb];
+    [metallib ApplyMetalFx:metalDevice InTex:intex OutTex:outtex CommandBuffer:_cb];
     
     [_cb commit];
 }

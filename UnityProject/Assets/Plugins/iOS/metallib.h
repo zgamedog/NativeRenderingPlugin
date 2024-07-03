@@ -15,4 +15,10 @@
                InTex:(nonnull id<MTLTexture>) inTex OutTex:(nonnull id<MTLTexture>) outTex
        CommandBuffer:(nonnull id<MTLCommandBuffer>) cb;
 
++(void) Blit:(nonnull id<MTLDevice>) _device
+               InTex:(nonnull id<MTLTexture>) inTex OutTex:(nonnull id<MTLTexture>) outTex
+       CommandBuffer:(nonnull id<MTLCommandBuffer>) cb;
+
+
+
 @end
